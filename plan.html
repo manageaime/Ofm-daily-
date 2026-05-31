@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>OFM Daily Manager</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0A0F1E;font-family:'Segoe UI',sans-serif;color:#E2E8F0;min-height:100vh}
+button,input,select{font-family:inherit}
+
+#header{padding:16px 18px 0;border-bottom:1px solid rgba(255,255,255,0.06)}
+#header h1{font-size:18px;font-weight:800;color:#F1F5F9;letter-spacing:-0.4px}
+#header p{font-size:11px;color:#475569;margin-top:2px}
+#htop{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+#pbadge{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:4px 12px;font-size:12px;color:#94A3B8;display:none}
+#pct{display:inline-block;margin-left:6px;background:#2563EB;color:#fff;border-radius:20px;padding:1px 7px;font-size:11px;font-weight:700}
+#tabs{display:flex;gap:2px}
+.tb{padding:9px 16px;border:none;background:none;font-size:13px;font-weight:600;color:#475569;border-bottom:2px solid transparent;cursor:pointer}
+.tb.on{color:#F1F5F9;border-bottom-color:#3B82F6}
+
+#wrap{padding:16px 16px 120px}
+
+/* day pills */
+.dpills{display:flex;gap:7px;overflow-x:auto;margin-bottom:18px;padding-bottom:2px}
+.dpills::-webkit-scrollbar{height:2px}
+.dpills::-webkit-scrollbar-thumb{background:#334155;border-radius:2px}
+.dp{padding:6px 14px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.03);color:#64748B;font-size:12px;font-weight:600;white-space:nowrap;flex-shrink:0;cursor:pointer}
+.dp.on{background:#2563EB;border-color:#2563EB;color:#fff}
+
+/* tasks */
+.sec{margin-bottom:20px}
+.shead{display:flex;align-items:center;gap:7px;margin-bottom:8px}
+.scnt{font-size:11px;font-weight:700;border-radius:20px;padding:1px 7px}
+.stit{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.trow{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.03);margin-bottom:5px}
+.trow.dn{background:rgba(16,185,129,0.04);border-color:rgba(16,185,129,0.2)}
+.chk{width:20px;height:20px;border-radius:6px;border:2px solid rgba(255,255,255,0.2);background:transparent;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;cursor:pointer}
+.chk.on{background:#10B981;border-color:#10B981}
+.tbadge{font-size:11px;font-weight:700;padding:2px 7px;border-radius:20px;flex-shrink:0}
+.tlbl{flex:1;font-size:13px;color:#D1D5DB}
+.tlbl.dn{color:#4B5563;text-decoration:line-through}
+.xbtn{background:none;border:none;color:#374151;font-size:13px;padding:0 2px;opacity:.4;cursor:pointer}
+
+/* forms */
+.di{background:#1E293B;border:1px solid rgba(255,255,255,0.1);border-radius:7px;padding:6px 9px;color:#E2E8F0;font-size:13px;outline:none;width:100%}
+.di::placeholder{color:#475569}
+.row2{display:flex;gap:7px;margin-bottom:7px}
+.bblu{background:#2563EB;color:#fff;border:none;border-radius:8px;padding:8px 0;font-size:13px;font-weight:700;flex:1;cursor:pointer}
+.bgry{background:rgba(255,255,255,0.06);color:#94A3B8;border:none;border-radius:8px;padding:8px 0;font-size:13px;flex:1;cursor:pointer}
+.addbtn{width:100%;background:none;border:1.5px dashed rgba(255,255,255,0.12);border-radius:10px;color:#475569;font-size:13px;padding:9px 0;cursor:pointer;margin-top:4px}
+
+/* calendar */
+.legend{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
+.ltag{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px}
+.cgrid2{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px}
+.cgrid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin-bottom:16px}
+.cell{border-radius:12px;padding:11px 9px;min-height:100px}
+.cell.hi{border:1px solid rgba(59,130,246,0.35);background:rgba(59,130,246,0.05)}
+.cell.lo{border:1px solid rgba(255,255,255,0.07);background:rgba(255,255,255,0.03)}
+.cday{font-size:12px;font-weight:700;margin-bottom:8px}
+.pcard{border-radius:8px;padding:5px 7px;margin-bottom:5px;position:relative}
+.ptop{display:flex;align-items:center;gap:4px}
+.ptyp{font-size:11px;font-weight:700}
+.ptim{font-size:10px;color:#6B7280;margin-left:auto}
+.ptit{font-size:11px;color:#CBD5E1;margin-top:2px}
+.pnot{font-size:10px;color:#64748B;margin-top:1px}
+.pdel{position:absolute;top:3px;right:5px;background:none;border:none;color:#6B7280;font-size:11px;padding:0;cursor:pointer}
+.apbtn{width:100%;background:none;border:1px dashed rgba(255,255,255,0.1);border-radius:7px;color:#475569;font-size:11px;padding:4px 0;cursor:pointer;margin-top:2px}
+.pform{background:rgba(255,255,255,0.04);border-radius:8px;padding:7px;border:1px solid rgba(255,255,255,0.1)}
+.pform select,.pform input{width:100%;margin-bottom:4px;background:#1E293B;border:1px solid rgba(255,255,255,0.1);border-radius:5px;padding:4px 6px;color:#E2E8F0;font-size:11px;outline:none}
+.pfbtns{display:flex;gap:4px;margin-top:2px}
+.pfbtns button{flex:1;border:none;border-radius:6px;padding:5px 0;font-size:12px;cursor:pointer}
+.bok{background:#2563EB;color:#fff;font-weight:600}
+.bno{background:rgba(255,255,255,0.06);color:#94A3B8}
+
+/* save bar */
+#sbar{position:fixed;bottom:0;left:0;right:0;background:#0A0F1E;border-top:1px solid rgba(255,255,255,0.08);padding:12px 18px;display:none;align-items:center;justify-content:space-between;gap:10px;z-index:99}
+#smsg{font-size:12px;color:#475569}
+#smsg.u{color:#F59E0B}
+#smsg.s{color:#10B981}
+#sbtn{background:#2563EB;color:#fff;border:none;border-radius:8px;padding:9px 22px;font-size:13px;font-weight:700;cursor:pointer}
+</style>
+
+</head>
+<body>
+
+<div id="header">
+  <div id="htop">
+    <div><h1>🗂 OFM Daily Manager</h1><p>Tâches quotidiennes · Calendrier éditorial</p></div>
+    <div id="pbadge"><span id="ptxt">0/0</span><span id="pct">0%</span></div>
+  </div>
+  <div id="tabs">
+    <button class="tb on" onclick="sw('tasks')">✅ Tâches du jour</button>
+    <button class="tb" onclick="sw('cal')">📅 Calendrier éditorial</button>
+  </div>
+</div>
+
+<div id="wrap"></div>
+
+<div id="sbar">
+  <span id="smsg">Calendrier à jour</span>
+  <button id="sbtn" onclick="saveAll()">💾 Enregistrer</button>
+</div>
+
+<script>
+const WS=["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"];
+const WF=["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
+const CM=["Lun","Mer","Ven","Dim"], CR=["Mar","Jeu","Sam"];
+
+const PT={
+  "Photo": {e:"📸",c:"#22C55E"},
+  "Vidéo": {e:"🎬",c:"#3B82F6"},
+  "Story": {e:"✨",c:"#F59E0B"},
+  "Masse": {e:"📢",c:"#EC4899"},
+  "Tweet": {e:"🐦",c:"#06B6D4"},
+  "Texte": {e:"✏️",c:"#A855F7"},
+  "Réel":  {e:"🎥",c:"#EF4444"},
+};
+
+const CATS={
+  "Matin":{c:"#F59E0B",i:"🌅"},
+  "Midi": {c:"#06B6D4",i:"☀️"},
+  "Soir": {c:"#8B5CF6",i:"🌙"},
+};
+
+const DT=[
+  {t:"08:00",l:"Vérifier DMs sans réponse",    g:"Matin"},
+  {t:"09:00",l:"Répondre aux nouveaux abonnés", g:"Matin"},
+  {t:"10:30",l:"Envoyer contenu programmé",     g:"Matin"},
+  {t:"13:00",l:"Relance abonnés inactifs",      g:"Midi"},
+  {t:"15:00",l:"Chatting actif (DMs)",          g:"Midi"},
+  {t:"18:00",l:"Publication contenu du soir",   g:"Soir"},
+  {t:"20:00",l:"Réponses DMs prioritaires",     g:"Soir"},
+  {t:"22:00",l:"Bilan et prep du lendemain",    g:"Soir"},
+];
+
+const CTPL={
+  "Lun":[["Photo","10:00","Blazer café ☕","",""],["Tweet","12:00","Teaser semaine","",""]],
+  "Mar":[["Story","09:00","Story du mardi","",""],["Vidéo","19:00","Post Vidéo","",""]],
+  "Mer":[["Masse","11:00","Message de masse","",""],["Texte","21:00","Message intime","",""]],
+  "Jeu":[["Photo","10:00","Post Photo","",""],["Story","18:00","Story du soir","",""]],
+  "Ven":[["Vidéo","12:00","Post Vidéo","",""],["Réel","20:00","Réel teaser weekend","",""]],
+  "Sam":[["Réel","11:00","Réel du samedi","",""],["Story","17:00","Story weekend","",""]],
+  "Dim":[["Masse","10:00","Message de masse","",""],["Texte","20:00","Message doux 🌙","",""]],
+};
+
+// ── STATE ──────────────────────────────────────────────────────────────────
+let tab="tasks", sel="Lun", nid=1000, unsaved=false;
+let TBD={}, CAL={};
+
+const LT="ofm_tasks_v4", LC="ofm_cal_v4";
+
+function defState(){
+  WS.forEach((d,i)=>{ TBD[d]=DT.map((x,j)=>({id:`${d}-${j}`,t:x.t,l:x.l,g:x.g,done:false})); });
+  [...CM,...CR].forEach(d=>{ CAL[d]=(CTPL[d]||[]).map(([ty,ti,tt,n1,n2],j)=>({id:`${d}-${j}`,ty,ti,tt,n1,n2})); });
+}
+
+function load(){
+  try{
+    const t=localStorage.getItem(LT),c=localStorage.getItem(LC);
+    if(t) TBD=JSON.parse(t);
+    if(c) CAL=JSON.parse(c);
+  }catch(e){}
+}
+
+function saveAll(){
+  try{
+    localStorage.setItem(LT,JSON.stringify(TBD));
+    localStorage.setItem(LC,JSON.stringify(CAL));
+    unsaved=false; setMsg("✅ Enregistré !","s");
+    setTimeout(()=>setMsg("Calendrier à jour",""),2500);
+  }catch(e){ alert("Impossible de sauvegarder."); }
+}
+
+function autoSaveTasks(){
+  try{ localStorage.setItem(LT,JSON.stringify(TBD)); }catch(e){}
+}
+
+function markU(){ unsaved=true; setMsg("⚠️ Non enregistré","u"); }
+
+function setMsg(txt,cls){
+  const m=document.getElementById("smsg");
+  if(!m)return; m.textContent=txt; m.className=cls||"";
+}
+
+// ── RENDER ──────────────────────────────────────────────────────────────────
+function render(){
+  tab==="tasks"?renderT():renderC();
+  const sb=document.getElementById("sbar");
+  sb.style.display=tab==="cal"?"flex":"none";
+  const pb=document.getElementById("pbadge");
+  pb.style.display=tab==="tasks"?"":"none";
+  if(tab==="tasks") updProg();
+  if(tab==="cal") setMsg(unsaved?"⚠️ Non enregistré":"Calendrier à jour", unsaved?"u":"");
+}
+
+function updProg(){
+  const ts=TBD[sel]||[];
+  const d=ts.filter(x=>x.done).length, tot=ts.length;
+  const p=tot?Math.round(d/tot*100):0;
+  document.getElementById("ptxt").textContent=`${d}/${tot}`;
+  const pe=document.getElementById("pct");
+  pe.textContent=p+"%"; pe.style.background=(d===tot&&tot>0)?"#10B981":"#2563EB";
+}
+
+// ── TASKS ──────────────────────────────────────────────────────────────────
+function renderT(){
+  const ts=TBD[sel]||[];
+  let h=`<div class="dpills">`;
+  WS.forEach((d,i)=>{ h+=`<button class="dp${d===sel?" on":""}" onclick="pick('${d}')">${WF[i]}</button>`; });
+  h+=`</div>`;
+
+  Object.entries(CATS).forEach(([cat,meta])=>{
+    const g=ts.filter(x=>x.g===cat);
+    h+=`<div class="sec">
+      <div class="shead">
+        <span style="font-size:15px">${meta.i}</span>
+        <span class="stit" style="color:${meta.c}">${cat}</span>
+        <span class="scnt" style="background:${meta.c}20;color:${meta.c}">${g.length}</span>
+      </div>`;
+    if(!g.length) h+=`<div style="color:#374151;font-size:12px;padding:6px 12px;font-style:italic">Aucune tâche</div>`;
+    g.forEach(t=>{
+      h+=`<div class="trow${t.done?" dn":""}">
+        <button class="chk${t.done?" on":""}" onclick="tog('${t.id}')">${t.done?"✓":""}</button>
+        <span class="tbadge" style="color:${meta.c};background:${meta.c}18">${meta.i} ${t.t}</span>
+        <span class="tlbl${t.done?" dn":""}">${t.l}</span>
+        <button class="xbtn" onclick="delT('${t.id}')">✕</button>
+      </div>`;
+    });
+    h+=`</div>`;
+  });
+
+  h+=`<div id="atf" style="display:none;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:13px;margin-top:6px">
+    <div class="row2">
+      <input type="time" id="nt" value="08:00" class="di" style="width:105px"/>
+      <select id="nc" class="di" style="flex:1">${Object.keys(CATS).map(c=>`<option>${c}</option>`).join("")}</select>
+    </div>
+    <input id="nl" class="di" placeholder="Description de la tâche…" style="margin-bottom:9px"/>
+    <div class="row2">
+      <button class="bblu" onclick="addT()">Ajouter</button>
+      <button class="bgry" onclick="cAF()">Annuler</button>
+    </div>
+  </div>
+  <button class="addbtn" id="atr" onclick="oAF()">+ Nouvelle tâche</button>`;
+
+  document.getElementById("wrap").innerHTML=h;
+}
+
+function pick(d){ sel=d; render(); }
+function tog(id){
+  TBD[sel]=TBD[sel].map(t=>t.id===id?{...t,done:!t.done}:t);
+  autoSaveTasks(); render();
+}
+function delT(id){ TBD[sel]=TBD[sel].filter(t=>t.id!==id); autoSaveTasks(); render(); }
+function oAF(){ document.getElementById("atf").style.display="block"; document.getElementById("atr").style.display="none"; }
+function cAF(){ document.getElementById("atf").style.display="none"; document.getElementById("atr").style.display=""; }
+function addT(){
+  const l=document.getElementById("nl").value.trim(); if(!l)return;
+  TBD[sel].push({id:`c${nid++}`,t:document.getElementById("nt").value,l,g:document.getElementById("nc").value,done:false});
+  autoSaveTasks(); render();
+}
+
+// ── CALENDAR ──────────────────────────────────────────────────────────────
+function renderC(){
+  const tOpts=Object.keys(PT).map(t=>`<option>${t}</option>`).join("");
+  const leg=Object.entries(PT).map(([t,{e,c}])=>
+    `<span class="ltag" style="background:${c}18;border:1px solid ${c}30;color:${c}">${e} ${t}</span>`
+  ).join("");
+
+  const cell=(d,hi)=>{
+    const ps=CAL[d]||[];
+    const fn=WF[WS.indexOf(d)];
+    let ph=ps.map(p=>{
+      const pt=PT[p.ty]||{e:"📄",c:"#94A3B8"};
+      return `<div class="pcard" style="background:${pt.c}14;border:1px solid ${pt.c}30">
+        <div class="ptop"><span>${pt.e}</span>
+          <span class="ptyp" style="color:${pt.c}">${p.ty}</span>
+          <span class="ptim">${p.ti}</span>
+        </div>
+        <div class="ptit">${p.tt}</div>
+        ${p.n1?`<div class="pnot">📝 ${p.n1}</div>`:""}
+        ${p.n2?`<div class="pnot">📌 ${p.n2}</div>`:""}
+        <button class="pdel" onclick="delP('${d}','${p.id}')">✕</button>
+      </div>`;
+    }).join("");
+
+    return `<div class="cell ${hi?"hi":"lo"}">
+      <div class="cday" style="color:${hi?"#60A5FA":"#94A3B8"}">${fn}</div>
+      ${ph}
+      <div id="pf-${d}" class="pform" style="display:none">
+        <select id="pf-${d}-ty">${tOpts}</select>
+        <input type="time" id="pf-${d}-ti" value="12:00"/>
+        <input id="pf-${d}-tt" placeholder="Titre du post"/>
+        <input id="pf-${d}-n1" placeholder="Note (optionnel)"/>
+        <input id="pf-${d}-n2" placeholder="Note (optionnel 2)"/>
+        <div class="pfbtns">
+          <button class="bok" onclick="subP('${d}')">✓</button>
+          <button class="bno" onclick="canP('${d}')">✕</button>
+        </div>
+      </div>
+      <button class="apbtn" id="apb-${d}" onclick="oPF('${d}')">+ Post</button>
+    </div>`;
+  };
+
+  document.getElementById("wrap").innerHTML=`
+    <div class="legend">${leg}</div>
+    <p style="font-size:11px;color:#3B82F6;margin-bottom:8px;font-weight:600">★ Jours principaux</p>
+    <div class="cgrid2">${CM.map(d=>cell(d,true)).join("")}</div>
+    <p style="font-size:11px;color:#475569;margin-bottom:8px;font-weight:600">Autres jours</p>
+    <div class="cgrid3">${CR.map(d=>cell(d,false)).join("")}</div>`;
+}
+
+function oPF(d){ document.getElementById(`pf-${d}`).style.display=""; document.getElementById(`apb-${d}`).style.display="none"; }
+function canP(d){ document.getElementById(`pf-${d}`).style.display="none"; document.getElementById(`apb-${d}`).style.display=""; }
+function subP(d){
+  const tt=document.getElementById(`pf-${d}-tt`).value.trim(); if(!tt)return;
+  CAL[d].push({
+    id:Date.now().toString(),
+    ty:document.getElementById(`pf-${d}-ty`).value,
+    ti:document.getElementById(`pf-${d}-ti`).value,
+    tt,
+    n1:document.getElementById(`pf-${d}-n1`).value,
+    n2:document.getElementById(`pf-${d}-n2`).value,
+  });
+  markU(); render();
+}
+function delP(d,id){ CAL[d]=CAL[d].filter(p=>p.id!==id); markU(); render(); }
+
+// ── TAB ──────────────────────────────────────────────────────────────────
+function sw(t){
+  tab=t;
+  document.querySelectorAll(".tb").forEach((b,i)=>b.classList.toggle("on",(i===0&&t==="tasks")||(i===1&&t==="cal")));
+  render();
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+defState(); load(); render();
+</script>
+
+</body>
+</html>
